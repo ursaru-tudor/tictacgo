@@ -50,7 +50,7 @@ func SymbolImage(p board.Player) (*ebiten.Image, error) {
 	case board.NONE:
 		return ebiten.NewImage(GridEdgeLength, GridEdgeLength), nil
 	default:
-		return nil, board.InvalidPlayerError{Value: byte(p)}
+		return nil, board.InvalidPlayerError(p)
 	}
 }
 
