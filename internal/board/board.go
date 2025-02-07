@@ -20,12 +20,10 @@ func (p Player) Valid() bool {
 }
 
 // Handles encountering bad players
-type InvalidPlayerError struct {
-	Value byte
-}
+type InvalidPlayerError byte
 
 func (e InvalidPlayerError) Error() string {
-	return fmt.Sprintf("Invalid Player value, %v", e.Value)
+	return fmt.Sprintf("Invalid Player value, %v", int(e))
 }
 
 func (p Player) String() string {
@@ -49,7 +47,7 @@ func AlternatePlayer(p Player) (Player, error) {
 	case NONE:
 		return p, errors.New("expected x or o, given none")
 	default:
-		return p, InvalidPlayerError{byte(p)}
+		return p, InvalidPlayerError(p)
 	}
 }
 
@@ -69,12 +67,10 @@ func (p *Position) Normalise() {
 }
 
 // Handles encountering bad positions
-type OutOfBoundsPositionError struct {
-	Where Position
-}
+type OutOfBoundsPositionError Position
 
 func (e OutOfBoundsPositionError) Error() string {
-	return fmt.Sprintf("Invalid Position object pointing to %v", e.Where)
+	return fmt.Sprintf("Invalid Position object pointing to %v, %v", e.X, e.Y)
 }
 
 // A board is defined by the owners of each position
@@ -83,7 +79,7 @@ type Board [3][3]Player
 // Checks if a move is possible, returns an erorr if it can't determine
 func (b Board) MovePossible(pos Position) (bool, error) {
 	if !pos.Valid() {
-		return false, OutOfBoundsPositionError{pos}
+		return false, OutOfBoundsPositionError(pos)
 	}
 
 	/* if !b[pos.X][pos.Y].Valid() {
@@ -103,7 +99,7 @@ func (b Board) MovePossible(pos Position) (bool, error) {
 // Actually changes the value at a position
 func (b *Board) MarkPosition(pos Position, p Player) error {
 	if !p.Valid() {
-		return InvalidPlayerError{byte(p)}
+		return InvalidPlayerError(p)
 	}
 
 	v, err := b.MovePossible(pos)
