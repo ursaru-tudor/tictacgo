@@ -40,6 +40,19 @@ func (p Player) String() string {
 	}
 }
 
+func AlternatePlayer(p Player) (Player, error) {
+	switch p {
+	case X:
+		return O, nil
+	case O:
+		return X, nil
+	case NONE:
+		return p, errors.New("expected x or o, given none")
+	default:
+		return p, InvalidPlayerError{byte(p)}
+	}
+}
+
 // Defines a position on the board
 type Position struct {
 	X, Y int
@@ -47,6 +60,12 @@ type Position struct {
 
 func (p Position) Valid() bool {
 	return (p.X >= 0) && (p.X < 3) && (p.Y >= 0) && (p.Y < 3)
+}
+
+// Transforms indices from 1-indexed to 0-indexed
+func (p *Position) Normalise() {
+	p.X = p.X - 1
+	p.Y = p.Y - 1
 }
 
 // Handles encountering bad positions
@@ -94,8 +113,10 @@ func (b *Board) MarkPosition(pos Position, p Player) error {
 	}
 
 	if !v {
-		return errors.New("Position already occupied")
+		return errors.New("position already occupied")
 	}
+
+	b[pos.X][pos.Y] = p
 
 	return nil
 }
