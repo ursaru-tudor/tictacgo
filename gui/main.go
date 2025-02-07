@@ -12,8 +12,8 @@ import (
 
 // Screen sizes
 const (
-	WindowW int = 640
-	WindowH int = 386
+	WindowW int = 320
+	WindowH int = 196
 )
 
 // Image assets
@@ -79,13 +79,16 @@ func (g *Game) Update() error {
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
-		if x <= GridEdgeLength*3 && y <= GridEdgeLength*3 {
+		if x < GridEdgeLength*3 && y < GridEdgeLength*3 {
 			gridx := int(x / GridEdgeLength)
 			gridy := int(y / GridEdgeLength)
 
-			possible, _ := g.gameBoard.MovePossible(board.Position{X: gridx, Y: gridy})
+			moveposition := board.Position{X: gridx, Y: gridy}
+
+			possible, _ := g.gameBoard.MovePossible(moveposition)
 
 			if possible {
+				g.gameBoard.MarkPosition(moveposition, g.current_turn)
 				g.gameBoard[gridx][gridy] = g.current_turn
 				g.current_turn, _ = board.AlternatePlayer(g.current_turn)
 			}
@@ -107,10 +110,11 @@ func GridPositionTranslated(pos board.Position) *ebiten.DrawImageOptions {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	// Background
 	screen.Fill(color.White)
-
 	screen.DrawImage(imageGrid, nil)
 
+	// Board
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			img, err := SymbolImage(g.gameBoard[i][j])
@@ -124,6 +128,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
+	// Game state
 	if g.current_turn != board.NONE {
 		img, _ := SymbolImage(g.current_turn)
 
@@ -141,11 +146,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return WindowW / 2, WindowH / 2
+	return WindowW, WindowH
 }
 
 func main() {
-	ebiten.SetWindowSize(WindowW, WindowH)
+	ebiten.SetWindowSize(WindowW*2, WindowH*2)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle("TicTacGo")
 	if err := ebiten.RunGame(&Game{}); err != nil {
