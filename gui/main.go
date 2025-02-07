@@ -68,6 +68,24 @@ type Game struct {
 	ended        bool
 }
 
+func ToleranceCheck(x int) bool {
+	const ToleranceLimit = 3
+	//x_adj := x / GridEdgeLength
+	x_diff := x % GridEdgeLength
+
+	if x_diff > GridEdgeLength/2 {
+		x_diff = GridEdgeLength - x_diff
+	}
+
+	return x_diff <= ToleranceLimit
+}
+
+// Returns true if the point (x, y) is near a boundary between grid cells.
+// Mitigates misinputs
+func GridCellEdge(x, y int) bool {
+	return ToleranceCheck(x) || ToleranceCheck(y)
+}
+
 func (g *Game) Update() error {
 	if g.ended {
 		return nil
@@ -80,8 +98,12 @@ func (g *Game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 		if x < GridEdgeLength*3 && y < GridEdgeLength*3 {
-			gridx := int(x / GridEdgeLength)
-			gridy := int(y / GridEdgeLength)
+			gridx := x / GridEdgeLength
+			gridy := y / GridEdgeLength
+
+			if GridCellEdge(x, y) {
+				return nil
+			}
 
 			moveposition := board.Position{X: gridx, Y: gridy}
 
