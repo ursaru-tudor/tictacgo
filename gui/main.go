@@ -12,15 +12,19 @@ import (
 
 // Screen sizes
 const (
-	WindowW int = 600
+	WindowW int = 640
 	WindowH int = 386
 )
 
 // Image assets
 var (
-	imageX    *ebiten.Image
-	imageO    *ebiten.Image
-	imageGrid *ebiten.Image
+	imageX       *ebiten.Image
+	imageO       *ebiten.Image
+	imageGrid    *ebiten.Image
+	imageTurn    *ebiten.Image
+	imageWon     *ebiten.Image
+	imageVictory *ebiten.Image
+	imageDraw    *ebiten.Image
 )
 
 const (
@@ -39,6 +43,10 @@ func init() {
 	loadImage(&imageX, "assets/X.png")
 	loadImage(&imageO, "assets/O.png")
 	loadImage(&imageGrid, "assets/grid.png")
+	loadImage(&imageTurn, "assets/turn.png")
+	loadImage(&imageWon, "assets/won.png")
+	loadImage(&imageVictory, "assets/congrats.png")
+	loadImage(&imageDraw, "assets/draw.png")
 }
 
 func SymbolImage(p board.Player) (*ebiten.Image, error) {
@@ -57,9 +65,14 @@ func SymbolImage(p board.Player) (*ebiten.Image, error) {
 type Game struct {
 	gameBoard    board.Board
 	current_turn board.Player
+	ended        bool
 }
 
 func (g *Game) Update() error {
+	if g.ended {
+		return nil
+	}
+
 	if g.current_turn == board.NONE {
 		g.current_turn = board.X
 	}
@@ -78,6 +91,12 @@ func (g *Game) Update() error {
 			}
 		}
 	}
+
+	if g.gameBoard.CheckDraw() || g.gameBoard.GetWinner() != board.NONE {
+		g.ended = true
+		g.current_turn = board.NONE
+	}
+
 	return nil
 }
 
@@ -105,6 +124,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
+	if g.current_turn != board.NONE {
+		img, _ := SymbolImage(g.current_turn)
+
+		screen.DrawImage(img, GridPositionTranslated(board.Position{X: 3, Y: 0}))
+		screen.DrawImage(imageTurn, GridPositionTranslated(board.Position{X: 4, Y: 0}))
+	} else if g.gameBoard.GetWinner() != board.NONE {
+		img, _ := SymbolImage(g.gameBoard.GetWinner())
+
+		screen.DrawImage(img, GridPositionTranslated(board.Position{X: 3, Y: 0}))
+		screen.DrawImage(imageWon, GridPositionTranslated(board.Position{X: 4, Y: 0}))
+		screen.DrawImage(imageVictory, GridPositionTranslated(board.Position{X: 3, Y: 1}))
+	} else {
+		screen.DrawImage(imageDraw, GridPositionTranslated(board.Position{X: 3, Y: 1}))
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
