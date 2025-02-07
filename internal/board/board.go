@@ -121,30 +121,51 @@ func (b *Board) MarkPosition(pos Position, p Player) error {
 	return nil
 }
 
-func (b Board) GetWinner() Player {
-	// Check lines
-	for line := 0; line < 3; line++ {
-		good := true
-		for i := 1; i < 3; i++ {
-			if b[line][i] != b[line][0] {
-				good = false
+func (b Board) OpenPositions() []Position {
+	var positions []Position
+	for x := 0; x < 3; x++ {
+		for y := 0; y < 3; y++ {
+			if b[x][y] == NONE {
+				positions = append(positions, Position{X: x, Y: y})
 			}
 		}
-		if good {
-			return b[line][0]
+	}
+	return positions
+}
+
+func (b Board) CheckDraw() bool {
+	return len(b.OpenPositions()) == 0 && b.GetWinner() == NONE
+}
+
+func (b Board) GetWinner() Player {
+	// Check lines
+
+	for line := 0; line < 3; line++ {
+		if b[line][0] != NONE {
+			good := true
+			for i := 1; i < 3; i++ {
+				if b[line][i] != b[line][0] {
+					good = false
+				}
+			}
+			if good {
+				return b[line][0]
+			}
 		}
 	}
 
 	// Check columns
 	for column := 0; column < 3; column++ {
-		good := true
-		for i := 1; i < 3; i++ {
-			if b[i][column] != b[0][column] {
-				good = false
+		if b[0][column] != NONE {
+			good := true
+			for i := 1; i < 3; i++ {
+				if b[i][column] != b[0][column] {
+					good = false
+				}
 			}
-		}
-		if good {
-			return b[0][column]
+			if good {
+				return b[0][column]
+			}
 		}
 	}
 
@@ -152,28 +173,31 @@ func (b Board) GetWinner() Player {
 
 	good := true
 
-	for i := 1; i < 3; i++ {
-		if b[i][i] != b[0][0] {
-			good = false
+	if b[0][0] != NONE {
+		for i := 1; i < 3; i++ {
+			if b[i][i] != b[0][0] {
+				good = false
+			}
 		}
-	}
-
-	if good {
-		return b[0][0]
+		if good {
+			return b[0][0]
+		}
 	}
 
 	// Check secondary diagonal
 
 	good = true
 
-	for i := 1; i < 3; i++ {
-		if b[i][2-i] != b[0][2] {
-			good = false
+	if b[0][2] != NONE {
+		for i := 1; i < 3; i++ {
+			if b[i][2-i] != b[0][2] {
+				good = false
+			}
 		}
-	}
 
-	if good {
-		return b[0][2]
+		if good {
+			return b[0][2]
+		}
 	}
 
 	return NONE

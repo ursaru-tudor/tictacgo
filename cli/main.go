@@ -41,13 +41,14 @@ func main() {
 	var game board.Board
 	fmt.Println("Welcome to TicTacGo!")
 
-	for current_player := board.X; game.GetWinner() == board.NONE; current_player, _ = board.AlternatePlayer(current_player) {
-		fmt.Println(PresentBoard(game))
+	for current_player := board.X; game.GetWinner() == board.NONE && !game.CheckDraw(); current_player, _ = board.AlternatePlayer(current_player) {
+		fmt.Printf("\n%v\n", PresentBoard(game))
 		fmt.Printf("%v's turn: ", current_player)
 
 		var pos board.Position
 
 		fmt.Scan(&pos.X, &pos.Y)
+
 		pos.Normalise()
 
 		for can, err := game.MovePossible(pos); !can; can, err = game.MovePossible(pos) {
@@ -56,7 +57,9 @@ func main() {
 			} else {
 				fmt.Print("Position already occupied, please try again\n")
 			}
+
 			fmt.Scan(&pos.X, &pos.Y)
+
 			pos.Normalise()
 		}
 
@@ -64,5 +67,10 @@ func main() {
 	}
 
 	fmt.Println(PresentBoard(game))
-	fmt.Printf("%v has won! Congratulations!!!\n", game.GetWinner())
+
+	if game.CheckDraw() {
+		fmt.Printf("Nobody won...\n")
+	} else {
+		fmt.Printf("%v has won! Congratulations!!!\n", game.GetWinner())
+	}
 }
