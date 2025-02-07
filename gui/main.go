@@ -55,16 +55,27 @@ func SymbolImage(p board.Player) (*ebiten.Image, error) {
 }
 
 type Game struct {
-	gameBoard board.Board
+	gameBoard    board.Board
+	current_turn board.Player
 }
 
 func (g *Game) Update() error {
+	if g.current_turn == board.NONE {
+		g.current_turn = board.X
+	}
+
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 		if x <= GridEdgeLength*3 && y <= GridEdgeLength*3 {
 			gridx := int(x / GridEdgeLength)
 			gridy := int(y / GridEdgeLength)
-			g.gameBoard[gridx][gridy] = board.X
+
+			possible, _ := g.gameBoard.MovePossible(board.Position{X: gridx, Y: gridy})
+
+			if possible {
+				g.gameBoard[gridx][gridy] = g.current_turn
+				g.current_turn, _ = board.AlternatePlayer(g.current_turn)
+			}
 		}
 	}
 	return nil
@@ -87,7 +98,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 			// Should never be capable of happening
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 
 			screen.DrawImage(img, GridPositionTranslated(board.Position{X: i, Y: j}))
