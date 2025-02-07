@@ -2,7 +2,6 @@ package main
 
 import (
 	"image/color"
-	_ "image/png"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -10,27 +9,29 @@ import (
 )
 
 const (
-	WindowW int = 640
-	WindowH int = 480
+	WindowW int = 600
+	WindowH int = 400
 )
 
 // Image assets
 var (
-	imageX *ebiten.Image
-	imageO *ebiten.Image
+	imageX    *ebiten.Image
+	imageO    *ebiten.Image
+	imageGrid *ebiten.Image
 )
 
-func init() {
+func loadImage(img **ebiten.Image, filename string) {
 	var err error
-	imageX, _, err = ebitenutil.NewImageFromFile("assets/X.png")
+	*img, _, err = ebitenutil.NewImageFromFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
-	imageO, _, err = ebitenutil.NewImageFromFile("assets/O.png")
-	if err != nil {
-		log.Fatal(err)
-	}
+func init() {
+	loadImage(&imageX, "assets/X.png")
+	loadImage(&imageO, "assets/O.png")
+	loadImage(&imageGrid, "assets/grid.png")
 }
 
 type Game struct{}
@@ -41,6 +42,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.White)
+	screen.DrawImage(imageGrid, nil)
 	screen.DrawImage(imageX, nil)
 
 	var v ebiten.DrawImageOptions
@@ -50,7 +52,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return WindowW, WindowH
+	return WindowW / 2, WindowH / 2
 }
 
 func main() {
