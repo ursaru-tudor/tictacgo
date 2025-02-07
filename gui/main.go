@@ -6,11 +6,13 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/ursaru-tudor/tictacgo/internal/board"
 )
 
+// Screen sizes
 const (
 	WindowW int = 600
-	WindowH int = 400
+	WindowH int = 386
 )
 
 // Image assets
@@ -18,6 +20,10 @@ var (
 	imageX    *ebiten.Image
 	imageO    *ebiten.Image
 	imageGrid *ebiten.Image
+)
+
+const (
+	GridEdgeLength = 64
 )
 
 func loadImage(img **ebiten.Image, filename string) {
@@ -40,15 +46,23 @@ func (g *Game) Update() error {
 	return nil
 }
 
+func GridPositionTranslated(pos board.Position) *ebiten.DrawImageOptions {
+	var dio ebiten.DrawImageOptions
+	dio.GeoM.Translate(GridEdgeLength*float64(pos.X), GridEdgeLength*float64(pos.Y))
+	return &dio
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.White)
+
 	screen.DrawImage(imageGrid, nil)
-	screen.DrawImage(imageX, nil)
 
-	var v ebiten.DrawImageOptions
-	v.GeoM.Translate(64, 0)
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			screen.DrawImage(imageO, GridPositionTranslated(board.Position{X: i, Y: j}))
+		}
+	}
 
-	screen.DrawImage(imageO, &v)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -57,6 +71,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	ebiten.SetWindowSize(WindowW, WindowH)
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle("TicTacGo")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
