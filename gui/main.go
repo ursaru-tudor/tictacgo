@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/ursaru-tudor/tictacgo/internal/board"
 )
 
@@ -40,9 +41,32 @@ func init() {
 	loadImage(&imageGrid, "assets/grid.png")
 }
 
-type Game struct{}
+func SymbolImage(p board.Player) (*ebiten.Image, error) {
+	switch p {
+	case board.X:
+		return imageX, nil
+	case board.O:
+		return imageO, nil
+	case board.NONE:
+		return ebiten.NewImage(GridEdgeLength, GridEdgeLength), nil
+	default:
+		return nil, board.InvalidPlayerError{Value: byte(p)}
+	}
+}
+
+type Game struct {
+	gameBoard board.Board
+}
 
 func (g *Game) Update() error {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		x, y := ebiten.CursorPosition()
+		if x <= GridEdgeLength*3 && y <= GridEdgeLength*3 {
+			gridx := int(x / GridEdgeLength)
+			gridy := int(y / GridEdgeLength)
+			g.gameBoard[gridx][gridy] = board.X
+		}
+	}
 	return nil
 }
 
@@ -59,7 +83,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
-			screen.DrawImage(imageO, GridPositionTranslated(board.Position{X: i, Y: j}))
+			img, err := SymbolImage(g.gameBoard[i][j])
+
+			// Should never be capable of happening
+			if err != nil {
+				panic(err)
+			}
+
+			screen.DrawImage(img, GridPositionTranslated(board.Position{X: i, Y: j}))
 		}
 	}
 
