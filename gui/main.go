@@ -68,6 +68,11 @@ type Game struct {
 	ended        bool
 }
 
+func (g *Game) RestartGame() {
+	g.current_turn = board.X
+	g.ended = false
+}
+
 func ToleranceCheck(x int) bool {
 	const ToleranceLimit = 3
 	//x_adj := x / GridEdgeLength
