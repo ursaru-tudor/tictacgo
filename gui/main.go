@@ -25,6 +25,7 @@ var (
 	imageWon     *ebiten.Image
 	imageVictory *ebiten.Image
 	imageDraw    *ebiten.Image
+	imageRestart *ebiten.Image
 )
 
 const (
@@ -47,6 +48,7 @@ func init() {
 	loadImage(&imageWon, "assets/won.png")
 	loadImage(&imageVictory, "assets/congrats.png")
 	loadImage(&imageDraw, "assets/draw.png")
+	loadImage(&imageRestart, "assets/restart.png")
 }
 
 func SymbolImage(p board.Player) (*ebiten.Image, error) {
@@ -71,6 +73,7 @@ type Game struct {
 func (g *Game) RestartGame() {
 	g.current_turn = board.X
 	g.ended = false
+	g.gameBoard.Reset()
 }
 
 func ToleranceCheck(x int) bool {
@@ -92,7 +95,18 @@ func GridCellEdge(x, y int) bool {
 }
 
 func (g *Game) Update() error {
+
+	// button to restart the game
 	if g.ended {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			x, y := ebiten.CursorPosition()
+			gridx := x / GridEdgeLength
+			gridy := y / GridEdgeLength
+
+			if gridy >= 2 && gridx >= 3 {
+				g.RestartGame()
+			}
+		}
 		return nil
 	}
 
@@ -169,6 +183,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		screen.DrawImage(imageVictory, GridPositionTranslated(board.Position{X: 3, Y: 1}))
 	} else {
 		screen.DrawImage(imageDraw, GridPositionTranslated(board.Position{X: 3, Y: 1}))
+	}
+
+	if g.ended {
+		screen.DrawImage(imageRestart, GridPositionTranslated(board.Position{X: 3, Y: 2}))
 	}
 }
 
