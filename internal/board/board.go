@@ -76,6 +76,14 @@ func (e OutOfBoundsPositionError) Error() string {
 // A board is defined by the owners of each position
 type Board [3][3]Player
 
+func (b *Board) Reset() {
+	for x := 0; x < 3; x++ {
+		for y := 0; y < 3; y++ {
+			b[x][y] = NONE
+		}
+	}
+}
+
 // Checks if a move is possible, returns an erorr if it can't determine
 func (b Board) MovePossible(pos Position) (bool, error) {
 	if !pos.Valid() {
