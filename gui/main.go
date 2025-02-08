@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
+	"image"
 	"image/color"
 	"log"
 
@@ -16,7 +19,12 @@ const (
 	WindowH int = 196
 )
 
-// Image assets
+// Image assets (embedded)
+
+//go:embed assets/X.png
+var imageDataX []byte
+
+// Ebiten image data
 var (
 	imageX       *ebiten.Image
 	imageO       *ebiten.Image
@@ -32,7 +40,7 @@ const (
 	GridEdgeLength = 64
 )
 
-func loadImage(img **ebiten.Image, filename string) {
+func loadImageFile(img **ebiten.Image, filename string) {
 	var err error
 	*img, _, err = ebitenutil.NewImageFromFile(filename)
 	if err != nil {
@@ -40,15 +48,24 @@ func loadImage(img **ebiten.Image, filename string) {
 	}
 }
 
+func loadImageEmbedded(img **ebiten.Image, imageData []byte) {
+	imgDecoded, _, err := image.Decode(bytes.NewReader(imageData))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	*img = ebiten.NewImageFromImage(imgDecoded)
+}
+
 func init() {
-	loadImage(&imageX, "assets/X.png")
-	loadImage(&imageO, "assets/O.png")
-	loadImage(&imageGrid, "assets/grid.png")
-	loadImage(&imageTurn, "assets/turn.png")
-	loadImage(&imageWon, "assets/won.png")
-	loadImage(&imageVictory, "assets/congrats.png")
-	loadImage(&imageDraw, "assets/draw.png")
-	loadImage(&imageRestart, "assets/restart.png")
+	loadImageFile(&imageX, "assets/X.png") //loadImageEmbedded(&imageX, imageDataX)
+	loadImageFile(&imageO, "assets/O.png")
+	loadImageFile(&imageGrid, "assets/grid.png")
+	loadImageFile(&imageTurn, "assets/turn.png")
+	loadImageFile(&imageWon, "assets/won.png")
+	loadImageFile(&imageVictory, "assets/congrats.png")
+	loadImageFile(&imageDraw, "assets/draw.png")
+	loadImageFile(&imageRestart, "assets/restart.png")
 }
 
 func SymbolImage(p board.Player) (*ebiten.Image, error) {
